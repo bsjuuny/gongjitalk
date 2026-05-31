@@ -65,7 +65,8 @@ function Ensure-FtpDirectory([string]$path) {
 }
 
 function Upload-File([string]$filePath) {
-  $relative = [System.IO.Path]::GetRelativePath($root, $filePath).Replace("\", "/")
+  $rootPath = $root.Path.TrimEnd("\", "/")
+  $relative = $filePath.Substring($rootPath.Length).TrimStart("\", "/").Replace("\", "/")
   $remotePath = Join-FtpPath $RemoteDir $relative
   $remoteFolder = Split-Path $remotePath -Parent
   if ($remoteFolder) {
