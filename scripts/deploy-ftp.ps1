@@ -1,6 +1,6 @@
 param(
   [string]$LocalDir = "out",
-  [string]$RemoteDir = $env:FTP_REMOTE_DIR
+  [string]$RemoteDir = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -30,7 +30,11 @@ if (-not $hostName -or -not $userName -or -not $password) {
 }
 
 if (-not $RemoteDir) {
-  $RemoteDir = "/"
+  $RemoteDir = $env:FTP_REMOTE_DIR
+}
+
+if (-not $RemoteDir) {
+  throw "FTP_REMOTE_DIR environment variable is required."
 }
 
 $root = Resolve-Path $LocalDir
