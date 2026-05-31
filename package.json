@@ -5,8 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:static": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:analyzer": "node scripts/check-analyzer.mjs",
+    "deploy:ftp": "powershell -ExecutionPolicy Bypass -File scripts/deploy-ftp.ps1"
   },
   "dependencies": {
     "next": "16.2.6",
