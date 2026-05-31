@@ -77,19 +77,31 @@ function Upload-File([string]$filePath) {
     Ensure-FtpDirectory $remoteFolder.Replace("\", "/")
   }
 
-  $uri = "ftp://$hostName$remotePath"
-  $request = [System.Net.FtpWebRequest]::Create($uri)
-  $request.Method = [System.Net.WebRequestMethods+Ftp]::UploadFile
-  $request.Credentials = $credential
-  $request.UseBinary = $true
   $bytes = [System.IO.File]::ReadAllBytes($filePath)
-  $request.ContentLength = $bytes.Length
-  $stream = $request.GetRequestStream()
-  $stream.Write($bytes, 0, $bytes.Length)
-  $stream.Close()
-  $response = $request.GetResponse()
-  $response.Close()
-  Write-Host "Uploaded $relative"
+  $lastError = $null
+  for ($attempt = 1; $attempt -le 3; $attempt++) {
+    try {
+      $uri = "ftp://$hostName$remotePath"
+      $request = [System.Net.FtpWebRequest]::Create($uri)
+      $request.Method = [System.Net.WebRequestMethods+Ftp]::UploadFile
+      $request.Credentials = $credential
+      $request.UseBinary = $true
+      $request.UsePassive = $true
+      $request.KeepAlive = $false
+      $request.ContentLength = $bytes.Length
+      $stream = $request.GetRequestStream()
+      $stream.Write($bytes, 0, $bytes.Length)
+      $stream.Close()
+      $response = $request.GetResponse()
+      $response.Close()
+      Write-Host "Uploaded $relative"
+      return
+    } catch {
+      $lastError = $_.Exception
+      Start-Sleep -Milliseconds (500 * $attempt)
+    }
+  }
+  throw "Failed to upload $relative`: $($lastError.Message)"
 }
 
 Ensure-FtpDirectory $RemoteDir
