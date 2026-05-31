@@ -5,6 +5,22 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Import-DotEnv([string]$path) {
+  if (-not (Test-Path $path)) { return }
+  Get-Content $path | ForEach-Object {
+    $line = $_.Trim()
+    if (-not $line -or $line.StartsWith("#") -or -not $line.Contains("=")) { return }
+    $key, $value = $line.Split("=", 2)
+    $key = $key.Trim()
+    $value = $value.Trim().Trim('"').Trim("'")
+    if ($key) {
+      [Environment]::SetEnvironmentVariable($key, $value, "Process")
+    }
+  }
+}
+
+Import-DotEnv ".env"
+
 $hostName = $env:FTP_HOST
 $userName = $env:FTP_USER
 $password = $env:FTP_PASSWORD
